@@ -71,8 +71,9 @@ describe('DirWalker', ->
 
   describe('_end', () ->
     it("emit 'end' event", (done) ->
-      dirwalker.once('end', (data) ->
+      dirwalker.once('end', (data, filestats) ->
         data.should.be.a('object')
+        stats.should.be.a('object')
         done()
       )
       dirwalker._end()
@@ -80,9 +81,9 @@ describe('DirWalker', ->
   )
 
   describe('_readEnd', ()->
-    it('substruct 1 from @readCount', () ->
+    it('substruct 1 from @readCount', ->
       dirwalker.readCount = 2
-      dirwalker._readEnd()
+      dirwalker._readEnd(FOO)
       dirwalker.readCount.should.equal(1)
     )
     it('call @_end when @readCount is 0', (done) ->
@@ -91,7 +92,17 @@ describe('DirWalker', ->
         dirwalker.readCount.should.equal(0)
         done()
       )
-      dirwalker._readEnd()
+      dirwalker._readEnd(FOO)
+    )
+    it('emit "read" with dirname and stats', (done) ->
+      dirwalker.stats[FOO] = {}
+      dirwalker.stats[FOO][ICEDCOFFEE] = stats[ICEDCOFFEE]
+      dirwalker.once('read', (dir, filestats) ->
+        dir.should.equal(FOO)
+        filestats.should.eql(dirwalker.stats[FOO])
+        done()
+      )
+      dirwalker._readEnd(FOO)
     )
   )
 
@@ -133,6 +144,15 @@ describe('DirWalker', ->
   )
 
   describe('walk',() ->
+    it('return stats of files inside when a directory reading is done', (done) ->
+      dirwalker.once('read', (dir, filestats) ->
+        dir.should.equal(TMP)
+        should.exist(filestats[FOO])
+        should.exist(filestats[HOTCOFFEE])
+        done()
+      )
+      dirwalker.walk()
+    )
     it('return a list of files and directories when finish walking', (done) ->
       dirwalker.on('end', (data) ->
         data.Directory.should.eql([TMP, FOO])
@@ -156,8 +176,8 @@ describe('DirWalker', ->
       )
       dirwalker.walk()
     )
-    it('file list should be all files',(done)->
-      dirwalker.on('end', (data) ->
+    it.only('file list should be all files',(done)->
+      dirwalker.on('end', (data, filestats) ->
         async.forEach(
           data.File,
           (v,callback)=>

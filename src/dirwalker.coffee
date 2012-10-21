@@ -47,6 +47,7 @@ module.exports = class DirWalker extends EventEmitter
   # `@root ()` : see *Class Properties* section  
   constructor:(@root = process.cwd()) ->
     @files = {}
+    @stats = {}
     @readCount = 0
     @FILE_TYPES = ['File', 'Directory', 'BlockDevice', 'FIFO', 'Socket', 'CharacterDevice', 'SymbolicLink']
 
@@ -56,11 +57,17 @@ module.exports = class DirWalker extends EventEmitter
  
   # #### End directory walking operation
   _end: () ->
+    flatstats = {}
+    #flatten @stats
+    for k, v of @stats
+      for k2, v2 of v
+        flatstats[k2] = v2
     # Emit `end` event
-    @emit('end',@files)
+    @emit('end', @files, flatstats)
 
   # #### When finish reading a directory, check if the whole walking (the other async processes) is done
-  _readEnd: () ->
+  _readEnd: (dir) ->
+    @emit('read', dir, @stats[dir])
     # -1 for the ended `@readdir()` process
     @readCount -= 1
     # If `@readCount` is `0`, there is no running process left
@@ -83,10 +90,11 @@ module.exports = class DirWalker extends EventEmitter
   # #### Read a directory and emit events when files (including directories) are found
   # `dir (String)` : a directory path to read
   _readdir: (dir) ->
+    @stats[dir] = {}
     fs.readdir(dir, (err, files) =>
       if err
-        @dirs = v for v in @dirs when v isnt dir
-        @_readEnd()
+        @files = v for v in @files when v isnt dir
+        @_readEnd(dir)
       else
         # Asyncronously read directories by keeping `@readCount`
         async.forEach(
@@ -96,6 +104,7 @@ module.exports = class DirWalker extends EventEmitter
             filepath = path.join(dir, file)
             # Get `file` stats
             fs.lstat(filepath, (err, stat) =>
+                @stats[dir][filepath] = stat
                 # Check if `filepath` should be ignored
                 if err or @filter?(filepath, stat)
                   callback()
@@ -112,7 +121,7 @@ module.exports = class DirWalker extends EventEmitter
             )
           =>
             # Finish reading `dir`
-            @_readEnd()
+            @_readEnd(dir)
         )
     )
 
@@ -136,7 +145,7 @@ module.exports = class DirWalker extends EventEmitter
         @_end()
       # If `@root` isn't a directory, abort by emitting `not dir` event
       else if not stat.isDirectory()
-        @emit('not dir', @root)
+        @emit('not dir', @root, stat)
         @_end()
       # Otherwise `@_reportFile()` and recursively keep walking
       else

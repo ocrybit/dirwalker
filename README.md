@@ -56,21 +56,41 @@ Events
 In addition to the 8 file found events above, DirWalker broadcasts the following events as well.
 
 
-	# when the walking is done, it emits "end" with an object that contains lists of all the files found under each file type as a key
-	dirwalker.on('end, (data) ->
+When the whole walking is done, it emits "end" with an object that contains lists of all the files found under each file type as a key.  
+It also gives stats of all the files found during the walking operation.
+
+	dirwalker.on('end, (data, stats) ->
 	  # list all the files found
 	  console.log(data.File)
 	  
 	  # list all the symbolic links found
 	  console.log(data.SymbolicLink)
+	  
+	  for filepath, stat of stats
+	    console.log("Stats for #{filepath}")
+	    console.log(stat)	  
 	)
-    
-	# if the given root directory doesn't exist, the walking operation cannot be initiated
+
+  
+When all the files inside a directory are read, it emits "read" with the directory path and an object that contains all the stats of the inside files from fs.lstat.
+
+	dirwalker.on('read, (dir, stats) ->
+	  console.log("#{dir} has been read!")
+	  for filepath, stat of stats
+	    console.log("Stats for #{filepath}")
+	    console.log(stat)
+	)
+
+  
+If the given root directory doesn't exist, the walking operation cannot be initiated.
+
 	dirwalker.on('nofile, (err) ->
 	  console.log(err)
 	)
 
-	# if the given root is not a directory, the walking operation still cannot be initiated
+  
+If the given root is not a directory, the walking operation still cannot be initiated.
+
 	dirwalker.on('not dir, (filepath, stats) ->
 	  console.log("#{filepath} is not a directory!")
 	  console.log(stats)
