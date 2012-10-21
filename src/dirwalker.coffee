@@ -39,10 +39,10 @@ module.exports = class DirWalker extends EventEmitter
   # `Socket` : found a socket  
   # `CharacterDevice` : found a character device  
   # `SymbolicLink` : found a symbolic link
-  # 'Unknown' : fount a file of unknown type
+  # 'Unknown' : found a file of unknown type
   # `nofile` : no file exists at the given `@root` path  
   # `not dir` : `@root` is not a directory
-  # `read` : read all the files inside a directory
+  # `read` : finish reading all the files inside a directory
 
   # #### constructor
   # `@root ()` : see *Class Properties* section  
@@ -110,13 +110,10 @@ module.exports = class DirWalker extends EventEmitter
                 if err or @filter?(filepath, stat)
                   callback()
                 else
-                  type = false
-                  for v in @FILE_TYPES
-                    if stat["is#{v}"]()
-                      type = v
-                      @_reportFile(filepath, v, stat)
-                      break
-                  unless type
+                  type = @getFileType(stat)
+                  if type
+                    @_reportFile(filepath, type, stat)
+                  else 
                     @emit('Unknown', filepath, stat)
                   callback()
             )
@@ -130,6 +127,14 @@ module.exports = class DirWalker extends EventEmitter
 
   # ### Public API
 
+  # #### Get a file type
+  # `stat (Object)` : a stat object
+  getFileType: (stat) ->
+    for v in @FILE_TYPES
+      if stat["is#{v}"]()
+        return v
+    return false
+  
   # #### Set a filter function
   # `fn (Function)` : a filter `Function`
   setFilter: (fn) ->

@@ -143,6 +143,12 @@ describe('DirWalker', ->
     )
   )
 
+  describe('getFileType',() ->
+    it.only('get a file type from a stat object', () ->
+      dirwalker.getFileType(stats[FOO]).should.equal('Directory')
+    )
+  )
+
   describe('walk',() ->
     it('return stats of files inside when a directory reading is done', (done) ->
       dirwalker.once('read', (dir, filestats) ->
@@ -176,7 +182,7 @@ describe('DirWalker', ->
       )
       dirwalker.walk()
     )
-    it.only('file list should be all files',(done)->
+    it('file list should be all files',(done)->
       dirwalker.on('end', (data, filestats) ->
         async.forEach(
           data.File,
