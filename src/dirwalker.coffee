@@ -105,11 +105,11 @@ module.exports = class DirWalker extends EventEmitter
             filepath = path.join(dir, file)
             # Get `file` stats
             fs.lstat(filepath, (err, stat) =>
-                @stats[dir][filepath] = stat
                 # Check if `filepath` should be ignored
                 if err or @filter?(filepath, stat)
                   callback()
                 else
+                  @stats[dir][filepath] = stat
                   type = @getFileType(stat)
                   if type
                     @_reportFile(filepath, type, stat)

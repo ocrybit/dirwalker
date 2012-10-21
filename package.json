@@ -1,6 +1,6 @@
 {
   "name" : "dirwalker",
-  "version" : "0.0.3",
+  "version" : "0.0.4",
   "description" : "A directory tree walker",
   "keywords" : ["directory", "fs", "walker", "file system", "dir"],
   "bugs" : {"url" : "https://github.com/tomoio/dirwalker/issues"},
