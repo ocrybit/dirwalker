@@ -44,7 +44,7 @@ Other file types will still be found and marked `Unknown`.
 
 Listener functions will have `filepath` and `stats` from `fs.lstat()`
 
-   	dirwalker.on('File, (filepath, stat) ->
+   	dirwalker.on('File', (filepath, stat) ->
 	  console.log("FilePath: #{filepath}")
 	  console.log("Stats: #{stats}")	  
 	)
@@ -59,7 +59,7 @@ In addition to the 8 file found events above, DirWalker broadcasts the following
 When the whole walking is done, it emits "end" with an object that contains lists of all the files found under each file type as a key.  
 It also gives stats of all the files found during the walking operation.
 
-	dirwalker.on('end, (data, stats) ->
+	dirwalker.on('end', (data, stats) ->
 	  # list all the files found
 	  console.log(data.File)
 	  
@@ -74,7 +74,7 @@ It also gives stats of all the files found during the walking operation.
   
 When all the files inside a directory are read, it emits "read" with the directory path and an object that contains all the stats of the inside files from fs.lstat.
 
-	dirwalker.on('read, (dir, stats) ->
+	dirwalker.on('read', (dir, stats) ->
 	  console.log("#{dir} has been read!")
 	  for filepath, stat of stats
 	    console.log("Stats for #{filepath}")
@@ -84,14 +84,14 @@ When all the files inside a directory are read, it emits "read" with the directo
   
 If the given root directory doesn't exist, the walking operation cannot be initiated.
 
-	dirwalker.on('nofile, (err) ->
+	dirwalker.on('nofile', (err) ->
 	  console.log(err)
 	)
 
   
 If the given root is not a directory, the walking operation still cannot be initiated.
 
-	dirwalker.on('not dir, (filepath, stats) ->
+	dirwalker.on('not dir', (filepath, stats) ->
 	  console.log("#{filepath} is not a directory!")
 	  console.log(stats)
 	)
