@@ -41,7 +41,8 @@ module.exports = class DirWalker extends EventEmitter
   # `SymbolicLink` : found a symbolic link
   # 'Unknown' : fount a file of unknown type
   # `nofile` : no file exists at the given `@root` path  
-  # `not dir` : `@root` is not a directory  
+  # `not dir` : `@root` is not a directory
+  # `read` : read all the files inside a directory
 
   # #### constructor
   # `@root ()` : see *Class Properties* section  
